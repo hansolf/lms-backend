@@ -1,0 +1,95 @@
+package models
+
+import (
+	"gorm.io/gorm"
+	"time"
+)
+
+type User struct {
+	gorm.Model
+	Username    string
+	Email       string `gorm:"unique;not null"`
+	Password    string `gorm:"not null"`
+	Role        string `gorm:"type:user_role;default:'студент'"`
+	UserCourses []UserCourse
+	TestResults []TestResult
+}
+
+type Course struct {
+	gorm.Model
+	Name        string `gorm:"unique;not null"`
+	Description string
+	Tests       []Test
+	Documents   []Documenti
+	UserCourses []UserCourse
+	Lessonis    []Lessons
+}
+
+type UserCourse struct {
+	gorm.Model
+	UserID   uint   `gorm:"index;not null"`
+	CourseID uint   `gorm:"index;not null"`
+	Status   string `gorm:"type:user_course_status;default:'не пройден'"`
+}
+
+type Lessons struct {
+	gorm.Model
+	CourseID    uint   `gorm:"index;not null"`
+	Title       string `gorm:"not null"`
+	Description string
+	Order       int
+	Tests       []Test      `gorm:"foreignKey:LessonID"`
+	Documents   []Documenti `gorm:"foreignKey:LessonID"`
+}
+
+type Test struct {
+	gorm.Model
+	CourseID    uint   `gorm:"index;not null"`
+	LessonID    uint   `gorm:"index;not null"`
+	Title       string `gorm:"not null"`
+	Description string
+	PassMark    int `gorm:"not null"`
+	MaxAttempts int `gorm:"default:1"`
+	Questions   []TestQuestion
+	Results     []TestResult
+}
+
+type TestQuestion struct {
+	gorm.Model
+	TestID        uint   `gorm:"index;not null"`
+	CourseID      uint   `gorm:"index;not null"`
+	LessonID      uint   `gorm:"index;not null"`
+	Question      string `gorm:"not null"`
+	QuestionTypes string `gorm:"type:question_type;not null" json:"question_types"`
+	Order         int    `gorm:"not null"`
+	CorrectAnswer string `gorm:"not null"`
+}
+
+type TestResult struct {
+	gorm.Model
+	UserID      uint `gorm:"index;not null"`
+	TestID      uint `gorm:"index;not null"`
+	Score       int
+	Status      string `gorm:"type:test_result_status;default:'не выполнено'"`
+	Attempt     int
+	StartedAt   time.Time
+	CompletedAt time.Time
+}
+
+type Documenti struct {
+	gorm.Model
+	CourseID uint    `gorm:"index;not null"`
+	LessonID uint    `gorm:"index;not null"`
+	FileName string  `gorm:"not null"`
+	FileType string  `gorm:"not null"`
+	FilePath string  `gorm:"not null"`
+	FileSize float64 `gorm:"not null"`
+}
+
+type TestVideo struct {
+	gorm.Model
+	FileName string  `gorm:"not null"`
+	FileType string  `gorm:"not null"`
+	FilePath string  `gorm:"not null"`
+	FileSize float64 `gorm:"not null"`
+}
