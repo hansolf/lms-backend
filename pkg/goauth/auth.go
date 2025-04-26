@@ -5,14 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/gorilla/mux"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 	"lms-go/pkg/email"
 	"lms-go/pkg/initial"
+	"lms-go/pkg/middleware"
 	"lms-go/pkg/models"
 	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -42,11 +45,15 @@ func (c *RegRequest) SendEmail(w http.ResponseWriter, r *http.Request) {
 		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
 	})
+	if strings.Contains(c.Password, "|") || strings.Contains(c.Email, "|") {
+		http.Error(w, "Пароль содержит запрещенные символы", http.StatusBadRequest)
+		return
+	}
 	gCode := generateC()
-	value := c.Password + "|" + c.Email
-	err = rdb.Set(context.Background(), gCode, value, time.Minute*10).Err()
+	val := c.Password + "|" + c.Email
+	err = rdb.Set(context.Background(), gCode, val, time.Minute*10).Err()
 	if err != nil {
-		http.Error(w, "Не удалось установить", http.StatusBadRequest)
+		http.Error(w, "Не удалось установить ключи REDIS", http.StatusBadRequest)
 		return
 	}
 	emailD := email.EmailData{
@@ -81,16 +88,16 @@ func (cr *CodeReg) SignUp(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Неправильный код", http.StatusBadRequest)
 		return
 	}
-	s := strings.Split(val, "|")
+	stringPE := strings.Split(val, "|")
 	// хэшируем пароль
-	hash, err := bcrypt.GenerateFromPassword([]byte(s[0]), 10)
+	hash, err := bcrypt.GenerateFromPassword([]byte(stringPE[0]), 10)
 	if err != nil {
 		http.Error(w, "Failed to hash password", http.StatusBadRequest)
 		return
 	}
 	//добавляем юзера в бд
 	user := models.User{
-		Email:    s[1],
+		Email:    stringPE[1],
 		Password: string(hash),
 	}
 	result := initial.DB.Create(&user)
@@ -135,7 +142,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	// найти пользователя
 	var user models.User
-	initial.DB.First(&user, "email = ?", user.Email)
+	initial.DB.First(&user, "email = ?", userR.Email)
 	if user.ID == 0 {
 		http.Error(w, "неверная почта или пароль", http.StatusNotFound)
 		return
@@ -173,6 +180,71 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+func UpdateMe(w http.ResponseWriter, r *http.Request) {
+	userR, ok := middleware.GetUserFromContext(r)
+	if !ok {
+		http.Error(w, "Не авторизован", http.StatusUnauthorized)
+		return
+	}
+	if userR.Role == string(middleware.Teacher) && userR.Role == string(middleware.Admin) {
+		var update models.User
+		err := json.NewDecoder(r.Body).Decode(&update)
+		if err != nil {
+			http.Error(w, "Не удалось задекодировать", http.StatusBadRequest)
+			return
+		}
+		var user models.User
+		initial.DB.First(&user, "id = ?", userR.ID)
+		if user.ID == 0 {
+			http.Error(w, "Не удалось найти пользователя", http.StatusNotFound)
+			return
+		}
+		if user.Name == "" || user.Name != update.Name {
+			user.Name = update.Name
+		}
+		if user.Secondname == "" || user.Secondname != update.Secondname {
+			user.Secondname = update.Secondname
+		}
+		if user.Kafedra == "не указано" || user.Kafedra != update.Kafedra {
+			user.Kafedra = update.Kafedra
+		}
+		if user.Vuz == "не указано" || user.Vuz != update.Vuz {
+			user.Vuz = update.Vuz
+		}
+		initial.DB.Save(&user)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(user)
+	} else {
+		var update models.User
+		err := json.NewDecoder(r.Body).Decode(&update)
+		if err != nil {
+			http.Error(w, "Не удалось задекодировать", http.StatusBadRequest)
+			return
+		}
+		var user models.User
+		initial.DB.First(&user, "id = ?", userR.ID)
+		if user.ID == 0 {
+			http.Error(w, "Не удалось найти пользователя", http.StatusNotFound)
+			return
+		}
+		if user.Name == "" || user.Name != update.Name {
+			user.Name = update.Name
+		}
+		if user.Secondname == "" || user.Secondname != update.Secondname {
+			user.Secondname = update.Secondname
+		}
+		if user.Fakultet == "не указано" || user.Kafedra != update.Kafedra {
+			user.Kafedra = update.Kafedra
+		}
+		if user.Vuz == "не указано" || user.Vuz != update.Vuz {
+			user.Vuz = update.Vuz
+		}
+		initial.DB.Save(&user)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(user)
+	}
+}
+
 func Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
@@ -185,42 +257,199 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func Me(w http.ResponseWriter, r *http.Request) {
-	cookie, _ := r.Cookie("token")
-	token, _ := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("SECRET")), nil
-	})
-	claims := token.Claims.(jwt.MapClaims)
-	userID := uint(claims["sub"].(float64))
-	var user models.User
-	initial.DB.First(&user, "id = ?", userID)
-	if user.ID == 0 {
-		http.Error(w, "Пользователь не найден", http.StatusNotFound)
-	}
-	eToken := cookie.Value
-	if eToken == "" {
-		http.Error(w, `{"error": "Неверный токен"}`, http.StatusUnauthorized)
+	userR, ok := middleware.GetUserFromContext(r)
+	if !ok {
+		http.Error(w, "Не авторизован", http.StatusUnauthorized)
 		return
 	}
-	response := struct {
-		ID        uint      `json:"id"`
-		Name      string    `json:"name"`
-		Email     string    `json:"email"`
-		Role      string    `json:"role"`
-		CreatedAt time.Time `json:"created_at"`
-	}{
-		ID:        user.ID,
-		Name:      user.Username,
-		Email:     user.Email,
-		Role:      user.Role,
-		CreatedAt: user.CreatedAt,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(response)
-	if err != nil {
-		http.Error(w, "Ошибка формирования ответа", http.StatusInternalServerError)
+	if userR.Role != string(middleware.Admin) && userR.Role != string(middleware.Teacher) {
+		var user models.User
+		initial.DB.First(&user, "id = ?", userR.ID)
+		if user.ID == 0 {
+			http.Error(w, "Пользователь не найден", http.StatusNotFound)
+		}
+		response := struct {
+			ID         uint                `json:"id"`
+			Name       string              `json:"name"`
+			Secondname string              `json:"secondname"`
+			Fakultet   string              `json:"kafedra"`
+			Vuz        string              `json:"vuz"`
+			MyCourses  []models.UserCourse `json:"myCourses"`
+			Email      string              `json:"email"`
+			Role       string              `json:"role"`
+			CreatedAt  time.Time           `json:"created_at"`
+		}{
+			ID:         user.ID,
+			Name:       user.Name,
+			Secondname: user.Secondname,
+			Fakultet:   user.Fakultet,
+			Vuz:        user.Vuz,
+			MyCourses:  user.UserCourses,
+			Email:      user.Email,
+			Role:       user.Role,
+			CreatedAt:  user.CreatedAt,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	} else {
+		var user models.User
+		initial.DB.First(&user, "id = ?", userR.ID)
+		if user.ID == 0 {
+			http.Error(w, "Пользователь не найден", http.StatusNotFound)
+		}
+		response := struct {
+			ID         uint                `json:"id"`
+			Name       string              `json:"name"`
+			Secondname string              `json:"secondname"`
+			Kafedra    string              `json:"kafedra"`
+			Vuz        string              `json:"vuz"`
+			MyCourses  []models.UserCourse `json:"myCourses"`
+			Email      string              `json:"email"`
+			Role       string              `json:"role"`
+			CreatedAt  time.Time           `json:"created_at"`
+		}{
+			ID:         user.ID,
+			Name:       user.Name,
+			Secondname: user.Secondname,
+			Kafedra:    user.Kafedra,
+			Vuz:        user.Vuz,
+			MyCourses:  user.UserCourses,
+			Email:      user.Email,
+			Role:       user.Role,
+			CreatedAt:  user.CreatedAt,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
 	}
 }
 
+type ReqToVerify struct {
+	Name       string `json:"name"`
+	Secondname string `json:"secondname"`
+	Vuz        string `json:"vuz"`
+	Kafedra    string `json:"kafedra"`
+}
+
+func Constructor() *ReqToVerify {
+	return &ReqToVerify{}
+}
+
+func (v *ReqToVerify) SendVerTeach(w http.ResponseWriter, r *http.Request) {
+	user, ok := middleware.GetUserFromContext(r)
+	if !ok {
+		http.Error(w, "Не авторизован", http.StatusUnauthorized)
+		return
+	}
+	if user.Role == string(middleware.Teacher) {
+		http.Error(w, "Вы уже учитель", http.StatusNotFound)
+		return
+	}
+	err := json.NewDecoder(r.Body).Decode(&v)
+	if err != nil {
+		http.Error(w, "Не удалось декодировать", http.StatusBadRequest)
+		return
+	}
+	if strings.Contains(v.Name, "|") && strings.Contains(user.Email, "|") {
+		http.Error(w, "Форма содержит запрещенные символы", http.StatusBadRequest)
+		return
+	}
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_URL"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
+	})
+	val := user.Email + "|" + v.Name + "|" + v.Secondname + "|" + v.Vuz + "|" + v.Kafedra
+	strID := strconv.Itoa(int(user.ID))
+	err = rdb.Set(context.Background(), strID, val, 7*60*24*time.Minute).Err()
+	if err != nil {
+		http.Error(w, "Не удалось установить ключи REDIS", http.StatusBadRequest)
+		return
+	}
+	//'СПбГЭУ', 'НИУ ИТМО', 'СПбПУ Петра Великого'
+	emailD := email.EmailData{
+		NameTeacher:       v.Name,
+		SecondNameTeacher: v.Secondname,
+		Vuz:               v.Vuz,
+		Kafedra:           v.Kafedra,
+		VerifyLink:        "http://localhost:8080/api/verifyteach/" + strID, // добавить
+	}
+	if v.Vuz == "СПбГЭУ" {
+		var htmlS string
+		htmlS, err = emailD.GenerateEmailHTML("VerifyTeacher.html")
+		if err != nil {
+			http.Error(w, "Не удалось перевести html страницу в строку", http.StatusBadRequest)
+			return
+		}
+		to := []string{"spbgeua@gmail.com"}
+		subject := "Уведомление от LMS"
+		err = email.SendEmail(to, subject, htmlS)
+		if err != nil {
+			http.Error(w, "Не удалось отправить на почту админа", http.StatusBadRequest)
+			return
+		}
+	}
+
+	if v.Vuz == "СПбПУ Петра Великого" {
+		var htmlS string
+		htmlS, err = emailD.GenerateEmailHTML("VerifyTeacher.html")
+		if err != nil {
+			http.Error(w, "Не удалось перевести html страницу в строку", http.StatusBadRequest)
+			return
+		}
+		to := []string{"spbpua@gmail.com"}
+		subject := "Уведомление от LMS"
+		err = email.SendEmail(to, subject, htmlS)
+		if err != nil {
+			http.Error(w, "Не удалось отправить на почту админа", http.StatusBadRequest)
+			return
+		}
+	}
+
+	if v.Vuz == "НИУ ИТМО" {
+		var htmlS string
+		htmlS, err = emailD.GenerateEmailHTML("VerifyTeacher.html")
+		if err != nil {
+			http.Error(w, "Не удалось перевести html страницу в строку", http.StatusBadRequest)
+			return
+		}
+		to := []string{"itmoa3280@gmail.com"}
+		subject := "Уведомление от LMS"
+		err = email.SendEmail(to, subject, htmlS)
+		if err != nil {
+			http.Error(w, "Не удалось отправить на почту админа", http.StatusBadRequest)
+			return
+		}
+	}
+}
+
+func VerifyTeacher(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID := vars["id"]
+	var user models.User
+	initial.DB.First(&user, userID)
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_URL"),
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
+	})
+	val, err := rdb.Get(context.Background(), userID).Result()
+	if err != nil {
+		http.Error(w, "Не удалось получить данные REDIS", http.StatusBadRequest)
+		return
+	}
+	data := strings.Split(val, "|")
+	user.Role = "преподаватель"
+	user.Email = data[0]
+	user.Name = data[1]
+	user.Secondname = data[2]
+	user.Vuz = data[3]
+	user.Kafedra = data[4]
+	if err := initial.DB.Save(&user).Error; err != nil {
+		http.Error(w, "Не удалось обновить пользователя", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
 func generateC() string {
 	rand.Seed(time.Now().UnixNano())
 	return fmt.Sprintf("%06d", rand.Intn(1000000))

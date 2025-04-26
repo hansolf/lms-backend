@@ -57,6 +57,10 @@ func UploadDoc(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Ошибка загрузки в MinIO", http.StatusInternalServerError)
 		return
 	}
+	if handler.Header.Get("Content-Type") == "video/mp4" {
+		http.Error(w, "Загружайте только документы", http.StatusBadRequest)
+		return
+	}
 	courseIDUint := parseUint(courseID)
 	lessonIDUint := parseUint(lessonID)
 	doc := models.Documenti{

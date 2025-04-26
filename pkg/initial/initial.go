@@ -1,14 +1,12 @@
 package initial
 
 import (
-	"context"
 	"crypto/tls"
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/joho/godotenv"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"lms-go/pkg/models"
@@ -26,22 +24,6 @@ func LoadEnvComp() {
 	if err != nil {
 		log.Fatal("Ошибка загрузки .env")
 	}
-}
-func ConRedis() {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_URL"),
-		Password: os.Getenv("REDIS_PASSWORD"),
-		DB:       0,
-	})
-	err := rdb.Set(context.Background(), "key", "value", 0).Err()
-	if err != nil {
-		log.Fatal("Не удалось установить ключ REDIS ", err)
-	}
-	val, err := rdb.Get(context.Background(), "key").Result()
-	if err != nil {
-		log.Fatal("Не удалось получить значение по ключу")
-	}
-	fmt.Println("key", val)
 }
 func ConDB() {
 	var err error
@@ -79,6 +61,25 @@ func ConDB() {
 		EXCEPTION
 			WHEN duplicate_object THEN null;
 		END $$;
+
+		DO $$ BEGIN
+			CREATE TYPE kafedra AS ENUM ('не указано', 'Кафедра информатики', 'Кафедра философии', 'Кафедра математики');
+		EXCEPTION
+			WHEN duplicate_object THEN null;
+		END $$;
+
+		DO $$ BEGIN
+			CREATE TYPE vuz AS ENUM ('не указано','СПбГЭУ', 'НИУ ИТМО', 'СПбПУ Петра Великого');
+		EXCEPTION
+			WHEN duplicate_object THEN null;
+		END $$;
+
+		DO $$ BEGIN
+			CREATE TYPE fakultet AS ENUM ('не указано','Факультет информатики', 'Факультет философии', 'Факультет математики');
+		EXCEPTION
+			WHEN duplicate_object THEN null;
+		END $$;
+
 	`).Error
 	if err != nil {
 		log.Fatalf("Ошибка создания enumов: %v", err)

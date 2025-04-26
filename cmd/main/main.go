@@ -29,6 +29,12 @@ func init() {
 func main() {
 	r := mux.NewRouter()
 	routes.SetupAuth(r)
+	meRouter := r.PathPrefix("/api").Subrouter()
+	meRouter.Use(middleware.AuthMiddleware)
+	routes.SetupMe(meRouter)
+	chatRouter := r.PathPrefix("/api").Subrouter()
+	chatRouter.Use(middleware.AuthMiddleware)
+	routes.SetupChat(chatRouter)
 	coursesRouter := r.PathPrefix("/api/courses").Subrouter()
 	coursesRouter.Use(middleware.AuthMiddleware)
 	routes.SetupCourses(coursesRouter)
@@ -38,7 +44,8 @@ func main() {
 	testsRouter := r.PathPrefix("/api/courses/{courseID}/lessons/{lessonID}").Subrouter()
 	testsRouter.Use(middleware.AuthMiddleware)
 	routes.SetupTests(testsRouter)
-	vidRouter := r.PathPrefix("/api").Subrouter()
+	vidRouter := r.PathPrefix("/api/courses/{courseID}/lessons/{lessonID}").Subrouter()
+	vidRouter.Use(middleware.AuthMiddleware)
 	routes.SetupVideos(vidRouter)
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5176"},
