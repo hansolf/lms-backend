@@ -19,10 +19,14 @@ func SetupAuth(h *mux.Router) {
 	h.HandleFunc("/api/auth/verify", code.SignUp).Methods("POST")
 	h.HandleFunc("/api/auth/login", goauth.Login).Methods("POST")
 	h.HandleFunc("/api/auth/logout", goauth.Logout).Methods("POST")
-	h.HandleFunc("/api/auth/me", goauth.Me).Methods("GET")
-
+	h.HandleFunc("/api/verifyteach/{id}", goauth.VerifyTeacher)
 }
-
+func SetupMe(h *mux.Router) {
+	verify := goauth.Constructor()
+	h.HandleFunc("/me", goauth.Me).Methods("GET")
+	h.HandleFunc("/me/update", goauth.UpdateMe).Methods("PUT")
+	h.HandleFunc("/me/teacher", verify.SendVerTeach).Methods("POST")
+}
 func SetupCourses(h *mux.Router) {
 	h.HandleFunc("/search", search.SearchCourses).Methods("GET")
 	h.HandleFunc("/search/deep", search.SearchCoursesDeep).Methods("GET")
@@ -68,4 +72,9 @@ func SetupVideos(h *mux.Router) {
 	h.HandleFunc("/videos/upload", python_api.UploadVid).Methods("POST")
 	h.HandleFunc("/videos/{vidID}/download/", documents.DownloadDoc).Methods("GET")
 	h.HandleFunc("/video/{vidID}/summary", python_api.VideoSummary).Methods("GET")
+}
+
+func SetupChat(h *mux.Router) {
+	chat := python_api.Constructor()
+	h.HandleFunc("/chat", chat.AnswerChatBot).Methods("POST")
 }

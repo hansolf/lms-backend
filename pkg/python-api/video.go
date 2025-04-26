@@ -9,11 +9,22 @@ import (
 	"github.com/minio/minio-go/v7"
 	"io/ioutil"
 	"lms-go/pkg/initial"
+	"lms-go/pkg/middleware"
 	"lms-go/pkg/models"
 	"net/http"
+	"strconv"
 )
 
 func UploadVid(w http.ResponseWriter, r *http.Request) {
+	user, ok := middleware.GetUserFromContext(r)
+	if !ok {
+		http.Error(w, "Не авторизован", http.StatusUnauthorized)
+		return
+	}
+	if user.Role != string(middleware.Admin) && user.Role != string(middleware.Teacher) {
+		http.Error(w, "Доступ запрещен", http.StatusForbidden)
+		return
+	}
 	err := r.ParseMultipartForm(1024 * 10 << 20) // 10 гб
 	if err != nil {
 		http.Error(w, "Ошибка при разборе формы", http.StatusBadRequest)
@@ -26,16 +37,25 @@ func UploadVid(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	_, err = initial.Client.PutObject(context.Background(),
-		"lectures", handler.Filename,
-		file,
-		handler.Size, minio.PutObjectOptions{ContentType: handler.Header.Get("Content-Type")})
-
-	if err != nil {
-		http.Error(w, "Ошибка загрузки в MinIO", http.StatusInternalServerError)
+	vars := mux.Vars(r)
+	courseID := vars["courseID"]
+	if courseID == "" {
+		http.Error(w, "ID курса не указан", http.StatusBadRequest)
+		return
+	}
+	vars = mux.Vars(r)
+	lessonID := vars["lessonID"]
+	if lessonID == "" {
+		http.Error(w, "ID урока не указан", http.StatusBadRequest)
+		return
+	}
+	if handler.Header.Get("Content-Type") != "video/mp4" {
+		http.Error(w, "Загружайте только видео", http.StatusBadRequest)
 		return
 	}
 	doc := models.TestVideo{
+		CourseID: parseUint(courseID),
+		LessonID: parseUint(lessonID),
 		FileName: handler.Filename,
 		FileType: handler.Header.Get("Content-Type"),
 		FilePath: handler.Filename,
@@ -44,6 +64,15 @@ func UploadVid(w http.ResponseWriter, r *http.Request) {
 	result := initial.DB.Create(&doc)
 	if result.Error != nil {
 		http.Error(w, "ошибка при сохранении информации о файле", http.StatusInternalServerError)
+		return
+	}
+	_, err = initial.Client.PutObject(context.Background(),
+		"lectures", handler.Filename,
+		file,
+		handler.Size, minio.PutObjectOptions{ContentType: handler.Header.Get("Content-Type")})
+
+	if err != nil {
+		http.Error(w, "Ошибка загрузки в MinIO", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
@@ -110,7 +139,7 @@ func GetVideoSummary(filename string) (*ProcessResponse, error) {
 	}
 
 	var result ProcessResponse
-	if err := json.Unmarshal(body, &result); err != nil {
+	if err = json.Unmarshal(body, &result); err != nil {
 		return nil, fmt.Errorf("ошибка парсинга ответа: %w\nraw: %s", err, string(body))
 	}
 
@@ -137,4 +166,12 @@ func VideoSummary(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(summary)
+}
+
+func parseUint(s string) uint {
+	u, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return uint(u)
 }

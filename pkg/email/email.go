@@ -21,6 +21,11 @@ type EmailData struct {
 	LessonLink        string `json:"lesson_link"`
 	TestLink          string `json:"test_link"`
 	Code              string `json:"code"`
+	NameTeacher       string `json:"name_teacher"`
+	SecondNameTeacher string `json:"second_name_teacher"`
+	Vuz               string `json:"vuz"`
+	Kafedra           string `json:"kafedra"`
+	VerifyLink        string `json:"verify_link"`
 }
 
 func SendEmail(to []string, subject, html string) error {

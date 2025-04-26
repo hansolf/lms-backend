@@ -7,22 +7,29 @@ import (
 
 type User struct {
 	gorm.Model
-	Username    string
-	Email       string `gorm:"unique;not null"`
-	Password    string `gorm:"not null"`
-	Role        string `gorm:"type:user_role;default:'студент'"`
-	UserCourses []UserCourse
-	TestResults []TestResult
+	Name        string
+	Secondname  string
+	Vuz         string       `gorm:"type:vuz;default:'не указано'"`
+	Kafedra     string       `gorm:"type:kafedra;default:'не указано'"`
+	Fakultet    string       `gorm:"type:fakultet;default:'не указано'"`
+	Email       string       `gorm:"unique;not null"`
+	Password    string       `gorm:"not null"`
+	Role        string       `gorm:"type:user_role;default:'студент'"`
+	UserCourses []UserCourse `gorm:"foreignKey:UserID"`
+	TestResults []TestResult `gorm:"foreignKey:UserID"`
 }
 
 type Course struct {
 	gorm.Model
 	Name        string `gorm:"unique;not null"`
 	Description string
-	Tests       []Test
-	Documents   []Documenti
-	UserCourses []UserCourse
-	Lessonis    []Lessons
+	Category    string       `gorm:"type:varchar(100)"` // enum
+	Lifetime    time.Time    `gorm:"type:varchar(100)"`
+	Tests       []Test       `gorm:"foreignKey:CourseID"`
+	Documents   []Documenti  `gorm:"foreignKey:CourseID"`
+	UserCourses []UserCourse `gorm:"foreignKey:CourseID"`
+	Lessonis    []Lessons    `gorm:"foreignKey:CourseID"`
+	Videos      []TestVideo  `gorm:"foreignKey:CourseID"`
 }
 
 type UserCourse struct {
@@ -40,6 +47,7 @@ type Lessons struct {
 	Order       int
 	Tests       []Test      `gorm:"foreignKey:LessonID"`
 	Documents   []Documenti `gorm:"foreignKey:LessonID"`
+	Videos      []TestVideo `gorm:"foreignKey:LessonID"`
 }
 
 type Test struct {
@@ -88,6 +96,8 @@ type Documenti struct {
 
 type TestVideo struct {
 	gorm.Model
+	CourseID uint    `gorm:"index;not null"`
+	LessonID uint    `gorm:"index;not null"`
 	FileName string  `gorm:"not null"`
 	FileType string  `gorm:"not null"`
 	FilePath string  `gorm:"not null"`
