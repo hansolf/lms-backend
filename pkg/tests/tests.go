@@ -10,6 +10,7 @@ import (
 	"lms-go/pkg/models"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -40,7 +41,7 @@ func CreateTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	kafkawriter := &kafka.Writer{
-		Addr:     kafka.TCP("localhost:9092"),
+		Addr:     kafka.TCP(os.Getenv("KAFKA_ADDRESS")),
 		Topic:    "test_notifications",
 		Balancer: &kafka.LeastBytes{},
 	}

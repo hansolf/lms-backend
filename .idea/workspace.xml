@@ -5,15 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7d3a539e-123b-4f6b-802c-b1b55a6acc6e" name="Список изменений" comment="">
+      <change afterPath="$PROJECT_DIR$/.env.docker" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmd/main/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/main/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/documents/documents.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/documents/documents.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/email/email.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/email/email.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/goauth/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/goauth/auth.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/initial/initial.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/initial/initial.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/models/userModel.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/models/userModel.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/lessons/lessons.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/lessons/lessons.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/python-api/chat.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/python-api/chat.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/python-api/video.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/python-api/video.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/routes/routes.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/routes/routes.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/tests/tests.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/tests/tests.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,12 +46,17 @@
   &quot;associatedIndex&quot;: 0
 }</component>
   <component name="ProjectId" id="2ufi3QEE5q1dCiA77G29pYfoiBv" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "DefaultGoTemplateProperty": "Go File",
     "DefaultHtmlFileTemplate": "HTML File",
     "Go Build.go build main.go.executor": "Run",
@@ -56,7 +68,8 @@
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "git-widget-placeholder": "main",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "docker/add-docker",
     "go.import.settings.migrated": "true",
     "last_opened_file_path": "C:/Users/vitek the g/GolandProjects/lms-go",
     "node.js.detected.package.eslint": "true",
@@ -119,6 +132,9 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="уровень приложения" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

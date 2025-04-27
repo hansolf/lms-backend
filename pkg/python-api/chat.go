@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"lms-go/pkg/middleware"
-	"log"
 	"net/http"
+	"os"
 )
 
 type ReqChat struct {
@@ -24,7 +24,7 @@ func AnswerChat(text string) (*RespChat, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.Post("http://localhost:8001/api/chat", "application/json", bytes.NewBuffer(reqBody))
+	resp, err := http.Post("http://"+os.Getenv("PYTHON_CHAT")+"/api/chat", "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func AnswerChat(text string) (*RespChat, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API error: %s", string(body))
+		return nil, fmt.Errorf("API ошибка: %s", string(body))
 	}
 
 	var chatResp RespChat
@@ -55,19 +55,12 @@ func (q *ReqChat) AnswerChatBot(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Не авторизован", http.StatusUnauthorized)
 		return
 	}
-	body, err := ioutil.ReadAll(r.Body)
+	err := json.NewDecoder(r.Body).Decode(&q)
 	if err != nil {
+		http.Error(w, "Не удалось декодировать", http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
-
-	var request ReqChat
-	if err := json.Unmarshal(body, &request); err != nil {
-		log.Printf("Error decoding JSON: %v", err)
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
-	}
-	answer, err := AnswerChat(request.Question)
+	answer, err := AnswerChat(q.Question)
 	if err != nil {
 		http.Error(w, "Не удалось получить вопрос", http.StatusBadRequest)
 		return

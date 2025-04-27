@@ -12,6 +12,7 @@ import (
 	"lms-go/pkg/search"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -47,7 +48,7 @@ func CreateLes(w http.ResponseWriter, r *http.Request) {
 	}
 	go search.IndexLesson(lessons, lessons.ID)
 	kafkaWriter := &kafka.Writer{
-		Addr:     kafka.TCP("localhost:9092"),
+		Addr:     kafka.TCP(os.Getenv("KAFKA_ADDRESS")),
 		Topic:    "course_notifications",
 		Balancer: &kafka.LeastBytes{},
 	}
@@ -148,7 +149,7 @@ func UpdateLes(w http.ResponseWriter, r *http.Request) {
 	}
 	go search.IndexLesson(lesson, lesson.ID)
 	kafkawriter := &kafka.Writer{
-		Addr:     kafka.TCP("localhost:9092"),
+		Addr:     kafka.TCP(os.Getenv("KAFKA_ADDRESS")),
 		Topic:    "course_update_notifications",
 		Balancer: &kafka.LeastBytes{},
 	}

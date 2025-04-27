@@ -380,7 +380,7 @@ func (v *ReqToVerify) SendVerTeach(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Не удалось перевести html страницу в строку", http.StatusBadRequest)
 			return
 		}
-		to := []string{"spbgeua@gmail.com"}
+		to := []string{os.Getenv("UNECON_ADMIN")}
 		subject := "Уведомление от LMS"
 		err = email.SendEmail(to, subject, htmlS)
 		if err != nil {
@@ -396,7 +396,7 @@ func (v *ReqToVerify) SendVerTeach(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Не удалось перевести html страницу в строку", http.StatusBadRequest)
 			return
 		}
-		to := []string{"spbpua@gmail.com"}
+		to := []string{os.Getenv("SPBPU_ADMIN")}
 		subject := "Уведомление от LMS"
 		err = email.SendEmail(to, subject, htmlS)
 		if err != nil {
@@ -412,7 +412,7 @@ func (v *ReqToVerify) SendVerTeach(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Не удалось перевести html страницу в строку", http.StatusBadRequest)
 			return
 		}
-		to := []string{"itmoa3280@gmail.com"}
+		to := []string{os.Getenv("ITMO_ADMIN")}
 		subject := "Уведомление от LMS"
 		err = email.SendEmail(to, subject, htmlS)
 		if err != nil {

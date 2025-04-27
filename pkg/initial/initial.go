@@ -22,17 +22,24 @@ var Client *minio.Client
 func LoadEnvComp() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Ошибка загрузки .env")
+		log.Println(".env файл не найден, используются переменные окружения из системы")
 	}
 }
 func ConDB() {
-	var err error
+	var (
+		dbHost     = os.Getenv("DB_HOST")
+		dbUser     = os.Getenv("DB_USER")
+		dbPassword = os.Getenv("DB_PASSWORD")
+		dbName     = os.Getenv("DB_NAME")
+		dbPort     = os.Getenv("DB_PORT")
+	)
+	fmt.Printf("DB Config: Host=%s, User=%s, DBName=%s, Port=%s\n",
+		dbHost, dbUser, dbName, dbPort)
+
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PORT"))
+		dbHost, dbUser, dbPassword, dbName, dbPort)
+
+	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("дб не подключается")
@@ -133,8 +140,23 @@ func InitESls() {
 
 func InitMinio() {
 	var err error
-	Client, err = minio.New("localhost:9000", &minio.Options{
-		Creds:  credentials.NewStaticV4("minioadmin", "minioadmin", ""),
+	endpoint := os.Getenv("MINIO_ENDPOINT")
+	if endpoint == "" {
+		endpoint = "localhost:9000"
+	}
+
+	accessKey := os.Getenv("MINIO_ACCESS_KEY")
+	if accessKey == "" {
+		accessKey = "minioadmin"
+	}
+
+	secretKey := os.Getenv("MINIO_SECRET_KEY")
+	if secretKey == "" {
+		secretKey = "minioadmin"
+	}
+
+	Client, err = minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure: false,
 	})
 	if err != nil {

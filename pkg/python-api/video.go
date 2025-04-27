@@ -12,6 +12,7 @@ import (
 	"lms-go/pkg/middleware"
 	"lms-go/pkg/models"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -127,7 +128,7 @@ func GetVideoSummary(filename string) (*ProcessResponse, error) {
 		return nil, err
 	}
 
-	resp, err := http.Post("http://localhost:8000/process/", "application/json", bytes.NewBuffer(reqBody))
+	resp, err := http.Post("http://"+os.Getenv("PYTHON_SUM")+"/process/", "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
 		return nil, err
 	}
