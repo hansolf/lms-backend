@@ -14,6 +14,7 @@ import (
 	"lms-go/pkg/routes"
 	"log"
 	"net/http"
+	"os"
 )
 
 func init() {
@@ -48,14 +49,14 @@ func main() {
 	vidRouter.Use(middleware.AuthMiddleware)
 	routes.SetupVideos(vidRouter)
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5176"},
+		AllowedOrigins:   []string{os.Getenv("CORS_FRONT")},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
 	})
 	go func() {
 		kafkaReader := kafka.NewReader(kafka.ReaderConfig{
-			Brokers: []string{"localhost:9092"},
+			Brokers: []string{os.Getenv("KAFKA_ADDRESS")},
 			Topic:   "test_notifications",
 			GroupID: "test-notifications-consumer-group",
 		})
@@ -85,7 +86,7 @@ func main() {
 	}()
 	go func() {
 		kafkaReader := kafka.NewReader(kafka.ReaderConfig{
-			Brokers: []string{"localhost:9092"},
+			Brokers: []string{os.Getenv("KAFKA_ADDRESS")},
 			Topic:   "course_update_notifications",
 			GroupID: "notifications-update-consumer-group",
 		})
@@ -120,7 +121,7 @@ func main() {
 	}()
 	go func() {
 		kafkaReader := kafka.NewReader(kafka.ReaderConfig{
-			Brokers: []string{"localhost:9092"},
+			Brokers: []string{os.Getenv("KAFKA_ADDRESS")},
 			Topic:   "course_notifications",
 			GroupID: "notifications-consumer-group",
 		})

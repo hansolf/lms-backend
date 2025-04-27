@@ -21,12 +21,14 @@ func SetupAuth(h *mux.Router) {
 	h.HandleFunc("/api/auth/logout", goauth.Logout).Methods("POST")
 	h.HandleFunc("/api/verifyteach/{id}", goauth.VerifyTeacher)
 }
+
 func SetupMe(h *mux.Router) {
 	verify := goauth.Constructor()
 	h.HandleFunc("/me", goauth.Me).Methods("GET")
 	h.HandleFunc("/me/update", goauth.UpdateMe).Methods("PUT")
 	h.HandleFunc("/me/teacher", verify.SendVerTeach).Methods("POST")
 }
+
 func SetupCourses(h *mux.Router) {
 	h.HandleFunc("/search", search.SearchCourses).Methods("GET")
 	h.HandleFunc("/search/deep", search.SearchCoursesDeep).Methods("GET")
@@ -42,7 +44,6 @@ func SetupCourses(h *mux.Router) {
 }
 
 func SetupLessons(h *mux.Router) {
-
 	h.HandleFunc("/search", search.SearchLessons).Methods("GET")
 	h.HandleFunc("/search/deep", search.SearchLessonsDeep).Methods("GET")
 	h.HandleFunc("/lessons/{lessonID}/upload", documents.UploadDoc).Methods("POST")

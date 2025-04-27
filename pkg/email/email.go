@@ -36,7 +36,7 @@ func SendEmail(to []string, subject, html string) error {
 }
 
 func (data *EmailData) GenerateEmailHTML(html string) (string, error) {
-	tmpl, err := template.New("Email").ParseFiles("C:/Users/vitek the g/GolandProjects/lms-go/templateshtml/" + html)
+	tmpl, err := template.New("Email").ParseFiles(os.Getenv("PATH_TO_HTML") + html)
 	if err != nil {
 		return "", err
 	}
