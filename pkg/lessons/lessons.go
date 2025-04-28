@@ -41,7 +41,7 @@ func CreateLes(w http.ResponseWriter, r *http.Request) {
 	}
 	lessons.CourseID = uint(courseID)
 
-	result := initial.DB.Preload("Documents").Preload("Tests").Create(&lessons)
+	result := initial.DB.Preload("Documents").Preload("Tests").Preload("Videos").Create(&lessons)
 	if result.Error != nil {
 		http.Error(w, "Не удалось создать урок", http.StatusInternalServerError)
 		return
@@ -83,7 +83,7 @@ func GetLessons(w http.ResponseWriter, r *http.Request) {
 	courseID := vars["courseID"]
 
 	var lessons []models.Lessons
-	result := initial.DB.Where("course_id = ?", courseID).Preload("Documents").Preload("Tests").Find(&lessons)
+	result := initial.DB.Where("course_id = ?", courseID).Preload("Documents").Preload("Tests").Preload("Videos").Find(&lessons)
 	if result.Error != nil {
 		http.Error(w, "Не удалось получить уроки курса", http.StatusInternalServerError)
 		return
@@ -96,7 +96,7 @@ func GetLesson(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	lessonID := vars["id"]
 	var lesson models.Lessons
-	result := initial.DB.Preload("Tests").Preload("Documents").First(&lesson, lessonID)
+	result := initial.DB.Preload("Tests").Preload("Documents").Preload("Videos").First(&lesson, lessonID)
 	if result.Error != nil {
 		http.Error(w, "Курс не найден", http.StatusNotFound)
 		return

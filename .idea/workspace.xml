@@ -5,21 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7d3a539e-123b-4f6b-802c-b1b55a6acc6e" name="Список изменений" comment="">
-      <change afterPath="$PROJECT_DIR$/.env.docker" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env.docker" beforeDir="false" afterPath="$PROJECT_DIR$/.env.docker" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmd/main/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/main/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/courses/courses.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/courses/courses.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/email/email.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/email/email.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/goauth/auth.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/goauth/auth.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/initial/initial.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/initial/initial.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/kfka/ntfcnstest.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/kfka/ntfcnstest.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/lessons/lessons.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/lessons/lessons.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/models/userModel.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/models/userModel.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/python-api/chat.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/python-api/chat.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/python-api/video.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/python-api/video.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/routes/routes.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/routes/routes.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/tests/testquestion.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/tests/testquestion.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/tests/tests.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/tests/tests.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

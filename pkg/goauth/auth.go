@@ -118,6 +118,7 @@ func (cr *CodeReg) SignUp(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    tokenstring,
+		Path:     "/",
 		Expires:  time.Now().Add(time.Hour * 72),
 		Secure:   false,
 		HttpOnly: true,
@@ -167,6 +168,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    tokenstring,
+		Path:     "/",
 		Expires:  time.Now().Add(time.Hour * 72),
 		Secure:   false,
 		HttpOnly: true,
@@ -186,74 +188,70 @@ func UpdateMe(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Не авторизован", http.StatusUnauthorized)
 		return
 	}
-	if userR.Role == string(middleware.Teacher) && userR.Role == string(middleware.Admin) {
-		var update models.User
-		err := json.NewDecoder(r.Body).Decode(&update)
-		if err != nil {
-			http.Error(w, "Не удалось задекодировать", http.StatusBadRequest)
-			return
-		}
-		var user models.User
-		initial.DB.First(&user, "id = ?", userR.ID)
-		if user.ID == 0 {
-			http.Error(w, "Не удалось найти пользователя", http.StatusNotFound)
-			return
-		}
-		if user.Name == "" || user.Name != update.Name {
-			user.Name = update.Name
-		}
-		if user.Secondname == "" || user.Secondname != update.Secondname {
-			user.Secondname = update.Secondname
-		}
-		if user.Kafedra == "не указано" || user.Kafedra != update.Kafedra {
-			user.Kafedra = update.Kafedra
-		}
-		if user.Vuz == "не указано" || user.Vuz != update.Vuz {
-			user.Vuz = update.Vuz
-		}
-		initial.DB.Save(&user)
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(user)
-	} else {
-		var update models.User
-		err := json.NewDecoder(r.Body).Decode(&update)
-		if err != nil {
-			http.Error(w, "Не удалось задекодировать", http.StatusBadRequest)
-			return
-		}
-		var user models.User
-		initial.DB.First(&user, "id = ?", userR.ID)
-		if user.ID == 0 {
-			http.Error(w, "Не удалось найти пользователя", http.StatusNotFound)
-			return
-		}
-		if user.Name == "" || user.Name != update.Name {
-			user.Name = update.Name
-		}
-		if user.Secondname == "" || user.Secondname != update.Secondname {
-			user.Secondname = update.Secondname
-		}
-		if user.Fakultet == "не указано" || user.Kafedra != update.Kafedra {
-			user.Kafedra = update.Kafedra
-		}
-		if user.Vuz == "не указано" || user.Vuz != update.Vuz {
-			user.Vuz = update.Vuz
-		}
-		initial.DB.Save(&user)
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(user)
+
+	type UserUpdateRequest struct {
+		Name       string `json:"name"`
+		Secondname string `json:"secondname"`
+		Vuz        string `json:"vuz"`
+		Kafedra    string `json:"kafedra"`
+		Fakultet   string `json:"fakultet"`
 	}
+
+	var update UserUpdateRequest
+	if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
+		http.Error(w, "Не удалось задекодировать", http.StatusBadRequest)
+		return
+	}
+
+	var user models.User
+	if err := initial.DB.First(&user, "id = ?", userR.ID).Error; err != nil {
+		http.Error(w, "Не удалось найти пользователя", http.StatusNotFound)
+		return
+	}
+
+	changed := false
+	if update.Name != "" && update.Name != user.Name {
+		user.Name = update.Name
+		changed = true
+	}
+	if update.Secondname != "" && update.Secondname != user.Secondname {
+		user.Secondname = update.Secondname
+		changed = true
+	}
+	if update.Vuz != "" && update.Vuz != user.Vuz {
+		user.Vuz = update.Vuz
+		changed = true
+	}
+	if update.Kafedra != "" && update.Kafedra != user.Kafedra {
+		user.Kafedra = update.Kafedra
+		changed = true
+	}
+	if update.Fakultet != "" && update.Fakultet != user.Fakultet {
+		user.Fakultet = update.Fakultet
+		changed = true
+	}
+
+	if changed {
+		if err := initial.DB.Save(&user).Error; err != nil {
+			http.Error(w, "Ошибка при сохранении", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    "",
-		Expires:  time.Now().Add(-time.Hour * 72),
+		Path:     "/",
+		Expires:  time.Now().Add(-time.Hour),
+		MaxAge:   -1,
 		Secure:   false,
 		HttpOnly: true,
 	})
-	w.WriteHeader(http.StatusOK)
 }
 
 func Me(w http.ResponseWriter, r *http.Request) {

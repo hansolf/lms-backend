@@ -8,6 +8,7 @@ import (
 )
 
 type NotificationTest struct {
+	TestID   uint   `json:"test_id"`
 	UserID   uint   `json:"user_id"`
 	CourseID uint   `json:"course_id"`
 	LessonID uint   `json:"lesson_id"`

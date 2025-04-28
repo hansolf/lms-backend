@@ -62,7 +62,7 @@ func (q *ReqChat) AnswerChatBot(w http.ResponseWriter, r *http.Request) {
 	}
 	answer, err := AnswerChat(q.Question)
 	if err != nil {
-		http.Error(w, "Не удалось получить вопрос", http.StatusBadRequest)
+		http.Error(w, "Не удалось получить вопрос"+err.Error(), http.StatusBadRequest)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

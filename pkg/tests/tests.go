@@ -35,7 +35,7 @@ func CreateTest(w http.ResponseWriter, r *http.Request) {
 	}
 	tests.CourseID = uint(courseID)
 	tests.LessonID = uint(lessonID)
-	result := initial.DB.Create(&tests)
+	result := initial.DB.Preload("Questions").Create(&tests)
 	if result.Error != nil {
 		http.Error(w, "Не удалось создать таблицу", http.StatusInternalServerError)
 		return
@@ -55,6 +55,7 @@ func CreateTest(w http.ResponseWriter, r *http.Request) {
 	var lesson models.Lessons
 	initial.DB.First(&lesson, lessonID)
 	event := kfka.NotificationTest{
+		TestID:   tests.ID,
 		CourseID: tests.CourseID,
 		LessonID: tests.LessonID,
 		Email:    poluchatel.Email,
