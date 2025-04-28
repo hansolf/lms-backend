@@ -71,8 +71,13 @@ func main() {
 			if err != nil {
 				log.Println("Не удалось перевести json в структуру: ", err)
 			}
-			var html email.EmailData
-			htmlq, err := html.GenerateEmailHTML("NewTest.html")
+			emailD := email.EmailData{
+				CourseName:  event.Course,
+				LessonTitle: event.Lesson,
+				TestTitle:   event.Test,
+				TestLink:    fmt.Sprintf("http://localhost:8080/api/courses/%v/lessons/%v/tests/%v", event.CourseID, event.LessonID, event.TestID),
+			}
+			htmlq, err := emailD.GenerateEmailHTML("NewTest.html")
 			if err != nil {
 				log.Println("Не удалось перевести в строку ", err)
 			}

@@ -58,7 +58,7 @@ func GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var course models.Course
-	result := initial.DB.Preload("Tests").Preload("Documents").Preload("Lessonis").Preload("UserCourses").First(&course, id)
+	result := initial.DB.Preload("Tests").Preload("Documents").Preload("Lessonis").Preload("UserCourses").Preload("Videos").First(&course, id)
 	if result.Error != nil {
 		http.Error(w, "Курс не найден", http.StatusNotFound)
 		return
@@ -78,7 +78,6 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Доступ запрещен", http.StatusForbidden)
 		return
 	}
-
 	vars := mux.Vars(r)
 	id := vars["id"]
 	if id == "" {

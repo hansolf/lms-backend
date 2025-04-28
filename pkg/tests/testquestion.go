@@ -107,8 +107,8 @@ func UpdateQ(w http.ResponseWriter, r *http.Request) {
 	if update.Question != testquestion.Question {
 		testquestion.Question = update.Question
 	}
-	if update.QuestionTypes != testquestion.QuestionTypes {
-		testquestion.QuestionTypes = update.QuestionTypes
+	if update.QuestionType != testquestion.QuestionType {
+		testquestion.QuestionType = update.QuestionType
 	}
 	if update.Order != testquestion.Order {
 		testquestion.Order = update.Order

@@ -18,14 +18,14 @@ func SetupAuth(h *mux.Router) {
 	h.HandleFunc("/api/send/register", reg.SendEmail).Methods("POST")
 	h.HandleFunc("/api/auth/verify", code.SignUp).Methods("POST")
 	h.HandleFunc("/api/auth/login", goauth.Login).Methods("POST")
-	h.HandleFunc("/api/auth/logout", goauth.Logout).Methods("POST")
+	h.HandleFunc("/api/auth/logout", goauth.Logout).Methods("DELETE")
 	h.HandleFunc("/api/verifyteach/{id}", goauth.VerifyTeacher)
 }
 
 func SetupMe(h *mux.Router) {
 	verify := goauth.Constructor()
 	h.HandleFunc("/me", goauth.Me).Methods("GET")
-	h.HandleFunc("/me/update", goauth.UpdateMe).Methods("PUT")
+	h.HandleFunc("/me/update", goauth.UpdateMe).Methods("PATCH")
 	h.HandleFunc("/me/teacher", verify.SendVerTeach).Methods("POST")
 }
 

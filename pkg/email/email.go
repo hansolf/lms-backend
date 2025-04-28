@@ -2,6 +2,7 @@ package email
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"net/smtp"
 	"os"
@@ -38,10 +39,10 @@ func SendEmail(to []string, subject, html string) error {
 func (data *EmailData) GenerateEmailHTML(html string) (string, error) {
 	tmpl, err := template.New("Email").ParseFiles(os.Getenv("PATH_TO_HTML") + html)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("ошибка парсинга шаблона %s: %w", os.Getenv("PATH_TO_HTML")+html, err)
 	}
 	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, data); err != nil {
+	if err = tmpl.Execute(&buf, data); err != nil {
 		return "", err
 	}
 	return buf.String(), nil

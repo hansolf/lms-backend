@@ -24,7 +24,6 @@ type Course struct {
 	Name        string `gorm:"unique;not null"`
 	Description string
 	Category    string       `gorm:"type:varchar(100)"` // enum
-	Lifetime    time.Time    `gorm:"type:varchar(100)"`
 	Tests       []Test       `gorm:"foreignKey:CourseID"`
 	Documents   []Documenti  `gorm:"foreignKey:CourseID"`
 	UserCourses []UserCourse `gorm:"foreignKey:CourseID"`
@@ -68,7 +67,7 @@ type TestQuestion struct {
 	CourseID      uint   `gorm:"index;not null"`
 	LessonID      uint   `gorm:"index;not null"`
 	Question      string `gorm:"not null"`
-	QuestionTypes string `gorm:"type:question_type;not null" json:"question_types"`
+	QuestionType  string `gorm:"type:question_type;not null" json:"question_type"`
 	Order         int    `gorm:"not null"`
 	CorrectAnswer string `gorm:"not null"`
 }
