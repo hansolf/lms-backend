@@ -5,22 +5,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"lms-go/pkg/initial"
 	"lms-go/pkg/middleware"
+	"lms-go/pkg/models"
 	"net/http"
 	"os"
 )
 
 type ReqChat struct {
 	Question string `json:"question"`
+	UserID   uint   `json:"user_id"`
 }
 
 type RespChat struct {
 	Chat_id string `json:"chat_id"`
 	Answer  any    `json:"answer"`
+	UserID  uint   `json:"user_id"`
 }
 
-func AnswerChat(text string) (*RespChat, error) {
-	reqBody, err := json.Marshal(ReqChat{Question: text})
+func AnswerChat(text string, userID uint) (*RespChat, error) {
+	reqBody, err := json.Marshal(ReqChat{
+		Question: text,
+		UserID:   userID,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -45,26 +52,47 @@ func AnswerChat(text string) (*RespChat, error) {
 	}
 	return &chatResp, nil
 }
+
 func Constructor() *ReqChat {
 	return &ReqChat{}
 }
 
 func (q *ReqChat) AnswerChatBot(w http.ResponseWriter, r *http.Request) {
-	_, ok := middleware.GetUserFromContext(r)
+	user, ok := middleware.GetUserFromContext(r)
 	if !ok {
 		http.Error(w, "Не авторизован", http.StatusUnauthorized)
 		return
 	}
-	err := json.NewDecoder(r.Body).Decode(&q)
+	var chat models.ResponseChat
+	err := json.NewDecoder(r.Body).Decode(&chat)
 	if err != nil {
 		http.Error(w, "Не удалось декодировать", http.StatusBadRequest)
 		return
 	}
-	answer, err := AnswerChat(q.Question)
+	answer, err := AnswerChat(chat.Answer, user.ID)
 	if err != nil {
 		http.Error(w, "Не удалось получить вопрос"+err.Error(), http.StatusBadRequest)
 		return
 	}
+	chat.UserID = user.ID
+	chat.Response = answer
+	initial.DB.Create(&chat)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(answer)
+}
+
+func GetMyChats(w http.ResponseWriter, r *http.Request) {
+	user, ok := middleware.GetUserFromContext(r)
+	if !ok {
+		http.Error(w, "Не авторизован", http.StatusUnauthorized)
+		return
+	}
+	var chats []models.ResponseChat
+	err := initial.DB.Where("user_id = ?", user.ID).Find(&chats)
+	if err != nil {
+		http.Error(w, "Не удалось найти чаты", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(chats)
 }

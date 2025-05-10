@@ -104,6 +104,8 @@ func SyncDB() {
 		&models.Documenti{},
 		&models.UserCourse{},
 		&models.TestVideo{},
+		&models.ResponseChat{},
+		&models.ResponseSummary{},
 	)
 }
 

@@ -159,16 +159,34 @@ func VideoSummary(w http.ResponseWriter, r *http.Request) {
 	if doc.ID == 0 {
 		http.Error(w, "Видео не найдено", http.StatusBadRequest)
 	}
+	var sum models.ResponseSummary
 	summary, err := GetVideoSummary(doc.FileName)
 	if err != nil {
 		http.Error(w, "Ошибка получения summary: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	sum.VideoID = doc.ID
+	sum.Summary = summary
+	result := initial.DB.Create(&sum)
+	if result.Error != nil {
+		http.Error(w, "Не удалось создать таблицу", http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(summary)
 }
-
+func GetSummary(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	vidID := vars["vidID"]
+	var sum models.ResponseSummary
+	result := initial.DB.First(&sum, vidID)
+	if result.Error != nil {
+		http.Error(w, "Не удалось найти summary видео", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(sum)
+}
 func parseUint(s string) uint {
 	u, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {

@@ -66,6 +66,8 @@ func SetupTests(h *mux.Router) {
 	h.HandleFunc("/tests/{testID}/questions/{id}", tests.UpdateQ).Methods("PUT")
 	h.HandleFunc("/tests/{testID}/questions/{id}", tests.DeleteQ).Methods("DELETE")
 	h.HandleFunc("/tests/{testID}/questions", tests.GetQs).Methods("GET")
+	h.HandleFunc("/tests/{testID}/submit", tests.SubmitTest).Methods("POST")
+	h.HandleFunc("/tests/{testID/start", tests.StartTest).Methods("POST")
 }
 
 func SetupVideos(h *mux.Router) {
@@ -73,9 +75,15 @@ func SetupVideos(h *mux.Router) {
 	h.HandleFunc("/videos/upload", python_api.UploadVid).Methods("POST")
 	h.HandleFunc("/videos/{vidID}/download/", documents.DownloadDoc).Methods("GET")
 	h.HandleFunc("/video/{vidID}/summary", python_api.VideoSummary).Methods("GET")
+	h.HandleFunc("/video/{vidID}/finalsummary", python_api.GetSummary).Methods("GET")
 }
 
 func SetupChat(h *mux.Router) {
 	chat := python_api.Constructor()
 	h.HandleFunc("/chat", chat.AnswerChatBot).Methods("POST")
+	h.HandleFunc("/chat", python_api.GetMyChats).Methods("GET")
+}
+
+func SetupChatRoutes(r *mux.Router) {
+	r.HandleFunc("/ws/chat/{id}", python_api.ChatWebSocket)
 }
