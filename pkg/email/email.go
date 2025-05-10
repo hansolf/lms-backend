@@ -21,6 +21,8 @@ type EmailData struct {
 	TestTitle         string `json:"test_title"`
 	LessonLink        string `json:"lesson_link"`
 	TestLink          string `json:"test_link"`
+	Score             int    `json:"score"`
+	Status            string `json:"status"`
 	Code              string `json:"code"`
 	NameTeacher       string `json:"name_teacher"`
 	SecondNameTeacher string `json:"second_name_teacher"`

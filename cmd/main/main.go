@@ -30,6 +30,7 @@ func init() {
 func main() {
 	r := mux.NewRouter()
 	routes.SetupAuth(r)
+	routes.SetupChatRoutes(r)
 	meRouter := r.PathPrefix("/api").Subrouter()
 	meRouter.Use(middleware.AuthMiddleware)
 	routes.SetupMe(meRouter)
@@ -54,6 +55,32 @@ func main() {
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
 	})
+	go func() {
+		kafkaReader := kafka.NewReader(kafka.ReaderConfig{
+			Brokers: []string{os.Getenv("KAFKA_ADDRESS")},
+			Topic:   "testresult_notifications",
+			GroupID: "testresult-notifications-consumer-group",
+		})
+		defer kafkaReader.Close()
+		for {
+			m, err := kafkaReader.ReadMessage(context.Background())
+			if err != nil {
+				log.Println("Не удалось прочитать сообщение Kafka")
+			}
+			var event kfka.NotificationTestResult
+			err = json.Unmarshal(m.Value, &event)
+			if err != nil {
+				log.Println("Не удалось перевести json в структуру")
+			}
+			emailD := email.EmailData{
+				CourseName:  event.Course,
+				LessonTitle: event.Lesson,
+				TestTitle:   event.Test,
+				Score:       event.Score,
+				Status:      event.Status,
+			}
+		}
+	}()
 	go func() {
 		kafkaReader := kafka.NewReader(kafka.ReaderConfig{
 			Brokers: []string{os.Getenv("KAFKA_ADDRESS")},

@@ -57,6 +57,7 @@ type Test struct {
 	Description string
 	PassMark    int `gorm:"not null"`
 	MaxAttempts int `gorm:"default:1"`
+	Duration    int `gorm:"not null" json:"duration"`
 	Questions   []TestQuestion
 	Results     []TestResult
 }
@@ -101,4 +102,17 @@ type TestVideo struct {
 	FileType string  `gorm:"not null"`
 	FilePath string  `gorm:"not null"`
 	FileSize float64 `gorm:"not null"`
+}
+
+type ResponseChat struct {
+	gorm.Model
+	UserID   uint `gorm:"index;not null"`
+	Answer   string
+	Response any
+}
+
+type ResponseSummary struct {
+	gorm.Model
+	VideoID uint `gorm:"index;not null"`
+	Summary any
 }

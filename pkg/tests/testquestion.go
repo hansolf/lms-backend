@@ -104,16 +104,16 @@ func UpdateQ(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Ошибка с декодированием", http.StatusBadRequest)
 		return
 	}
-	if update.Question != testquestion.Question {
+	if update.Question != "" {
 		testquestion.Question = update.Question
 	}
-	if update.QuestionType != testquestion.QuestionType {
+	if update.QuestionType != "" {
 		testquestion.QuestionType = update.QuestionType
 	}
-	if update.Order != testquestion.Order {
+	if update.Order != 0 {
 		testquestion.Order = update.Order
 	}
-	if update.CorrectAnswer != testquestion.CorrectAnswer {
+	if update.CorrectAnswer != "" {
 		testquestion.CorrectAnswer = update.CorrectAnswer
 	}
 	result = initial.DB.Save(&testquestion)
